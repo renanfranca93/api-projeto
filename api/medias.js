@@ -1,6 +1,7 @@
 
 
 
+
 const medias = [
     {id: 1, type: "movie", title: "Inception"},
     {id: 2, type: "tv", title: "Breaking Bad"},
@@ -11,14 +12,10 @@ const medias = [
 module.exports = (req, res) => {
     if (req.method === "GET") {
         return res.status(200).json({medias});
-    }else if (req.method === "POST") {
-        const newMedia = req.body;
-        return res.status(201).json(
+    }else{
+        return res.status(405).json(
             {
-                message: "Media created",
-                media: newMedia,
-                totalMedias: [...medias, newMedia].length,
-                allMedias: [...medias, newMedia]
+                message: "Método não permitido"
             }
         );
     }
