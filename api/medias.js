@@ -1,22 +1,25 @@
+const { getCollection } = require('./_lib/mongo');
+const { validateProduct } = require('./_lib/validators/media');
 
+module.exports = async (req, res) => {
+  const collection = await getCollection();
 
+  if (req.method === 'POST') {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body;
 
-
-const medias = [
-    {id: 1, type: "movie", title: "Inception"},
-    {id: 2, type: "tv", title: "Breaking Bad"},
-    {id: 3, type: "movie", title: "The Matrix"},
-    {id: 4, type: "tv", title: "Game of Thrones"}
-];
-
-module.exports = (req, res) => {
-    if (req.method === "GET") {
-        return res.status(200).json({medias});
-    }else{
-        return res.status(405).json(
-            {
-                message: "Método não permitido"
-            }
-        );
+    const validation = validateProduct(body);
+    if (!validation.ok) {
+      return res.status(400).json({ error: validation.error });
     }
-}
+
+    await collection.insertOne(validation.value);
+  }
+
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  const products = await collection.find({}).toArray();
+  return res.status(200).json(products);
+};
